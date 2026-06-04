@@ -137,4 +137,3 @@ The stock `pulumi/guestbook-php-redis` frontend image does not expose native Pro
 pulumi destroy
 pulumi stack rm dev
 ```
-
