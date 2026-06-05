@@ -1,0 +1,102 @@
+{
+  "title": "Guestbook Overview",
+  "uid": "guestbook-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "tags": [
+    "guestbook",
+    "pulumi"
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Frontend HTTP probe",
+      "type": "stat",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "probe_success{job=\"guestbook-frontend\"}",
+          "legendFormat": "success"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Frontend request rate",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(nginx_http_requests_total{namespace=\"${guestbookNamespace}\"}[5m]))",
+          "legendFormat": "requests/sec"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Guestbook pod CPU",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"${guestbookNamespace}\",container!=\"\",pod!=\"\"}[5m]))",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Guestbook pod memory",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"${guestbookNamespace}\",container!=\"\",pod!=\"\"})",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Redis connected clients",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "redis_connected_clients{namespace=\"${guestbookNamespace}\"}",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    }
+  ]
+}
