@@ -163,17 +163,37 @@ kubectl get resourcequota,limitrange -A
 kubectl get networkpolicy -A
 ```
 
+## Validation Screenshots
+
+The screenshots below were captured from a local Minikube deployment after `pulumi up`.
+
+### Grafana Dashboard
+
+![Grafana dashboard](screenshots/grafana-dashboard.png)
+
+### Prometheus Targets
+
+![Prometheus targets](screenshots/prometheus-targets.png)
+
+### Kubernetes Pods
+
+![kubectl get pods -A](screenshots/kubectl-pods.png)
+
+### Horizontal Pod Autoscaler
+
+![kubectl get hpa -n guestbook](screenshots/hpa-output.png)
+
 ## Dashboard
 
 Grafana automatically imports the `Guestbook Overview` dashboard from `dashboards/guestbook-overview.json`.
 
 The dashboard shows:
 
-- Frontend HTTP probe status.
+- Frontend scrape health.
 - Frontend request rate from NGINX exporter metrics.
-- Guestbook pod CPU usage.
-- Guestbook pod memory usage.
+- Redis exporter health.
 - Redis connected clients from Redis exporter metrics.
+- Frontend HPA current, minimum, and maximum replicas.
 
 ## Notes
 
