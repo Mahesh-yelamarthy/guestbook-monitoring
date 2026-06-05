@@ -378,9 +378,16 @@ new k8s.apiextensions.CustomResource("guestbook-frontend-probe", {
   },
 }, { dependsOn: [monitoringStack, blackboxService, frontendService] });
 
-const grafanaService = k8s.core.v1.Service.get("grafana-service",
-  pulumi.interpolate`${monitoringNamespace.metadata.name}/monitoring-grafana`,
-  { dependsOn: monitoringStack });
+const grafanaServiceNameValue = "monitoring-grafana";
+const grafanaService = pulumi.runtime.isDryRun()
+  ? undefined
+  : k8s.core.v1.Service.get("grafana-service",
+    pulumi.interpolate`${monitoringNamespace.metadata.name}/${grafanaServiceNameValue}`,
+    { dependsOn: monitoringStack });
+const grafanaLoadBalancerUrl = grafanaService
+  ? grafanaService.status.loadBalancer.ingress.apply(ingress =>
+    `http://${ingress[0].hostname ?? ingress[0].ip}`)
+  : pulumi.output("available after pulumi up");
 
 export const frontendServiceName = frontendService.metadata.name;
 export const frontendNamespace = guestbookNamespace.metadata.name;
@@ -389,13 +396,12 @@ export const frontendUrl = isMinikube
   : frontendService.status.loadBalancer.ingress.apply(ingress =>
     `http://${ingress[0].hostname ?? ingress[0].ip}`);
 export const frontendPortForwardCommand = pulumi.interpolate`kubectl -n ${guestbookNamespace.metadata.name} port-forward svc/${frontendService.metadata.name} 8080:80`;
-export const grafanaServiceName = grafanaService.metadata.name;
+export const grafanaServiceName = grafanaServiceNameValue;
 export const grafanaNamespace = monitoringNamespace.metadata.name;
 export const grafanaUrl = isMinikube
   ? "http://localhost:3000"
-  : grafanaService.status.loadBalancer.ingress.apply(ingress =>
-    `http://${ingress[0].hostname ?? ingress[0].ip}`);
-export const grafanaPortForwardCommand = pulumi.interpolate`kubectl -n ${monitoringNamespace.metadata.name} port-forward svc/${grafanaService.metadata.name} 3000:80`;
+  : grafanaLoadBalancerUrl;
+export const grafanaPortForwardCommand = pulumi.interpolate`kubectl -n ${monitoringNamespace.metadata.name} port-forward svc/${grafanaServiceNameValue} 3000:80`;
 export const grafanaUsername = grafanaAdminUser;
 export const grafanaPassword = grafanaAdminPassword;
 export const prometheusVerification = pulumi.interpolate`kubectl -n ${monitoringNamespace.metadata.name} port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090`;
